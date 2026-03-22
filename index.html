@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Anyboot Panel | Minecraft Server Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/yaml/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/properties/properties.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar - Glassmorphism -->
+        <aside class="sidebar glass">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span>Anyboot</span>
+                </div>
+                <div class="server-badge" id="serverBadge">
+                    <span class="badge-dot"></span>
+                    <span>OFFLINE</span>
+                </div>
+            </div>
+            
+            <nav class="nav">
+                <a href="#" data-page="dashboard" data-url="dashboard" class="nav-link active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" data-page="console" data-url="console" class="nav-link">
+                    <i class="fas fa-terminal"></i>
+                    <span>Console</span>
+                </a>
+                <a href="#" data-page="files" data-url="files" class="nav-link">
+                    <i class="fas fa-folder"></i>
+                    <span>File Manager</span>
+                </a>
+                <a href="#" data-page="settings" data-url="settings" class="nav-link">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" data-page="network" data-url="network" class="nav-link">
+                    <i class="fas fa-network-wired"></i>
+                    <span>Network</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="ram-usage glass">
+                    <i class="fas fa-microchip"></i>
+                    <span id="ramInfo">2GB / 4GB</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header with quick actions -->
+            <header class="header glass">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <div class="quick-actions">
+                        <button class="action-btn start" id="quickStart">
+                            <i class="fas fa-play"></i>
+                            <span>Start</span>
+                        </button>
+                        <button class="action-btn stop" id="quickStop">
+                            <i class="fas fa-stop"></i>
+                            <span>Stop</span>
+                        </button>
+                        <button class="action-btn restart" id="quickRestart">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Restart</span>
+                        </button>
+                        <button class="action-btn kill" id="quickKill">
+                            <i class="fas fa-skull"></i>
+                            <span>Kill</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="stats-grid">
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Allocated RAM</span>
+                            <span class="stat-value" id="statRam">-</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Server Port</span>
+                            <span class="stat-value" id="statPort">-</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Public IP</span>
+                            <span class="stat-value" id="statIp">-</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Uptime</span>
+                            <span class="stat-value" id="statUptime">0s</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Players</span>
+                            <span class="stat-value" id="statPlayers">0/<span id="maxPlayers">20</span></span>
+                        </div>
+                    </div>
+                    <div class="stat-card glass">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Stability</span>
+                            <span class="stat-value" id="statStability">100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel-row">
+                    <div class="panel-card glass">
+                        <div class="panel-header">
+                            <i class="fas fa-scroll"></i>
+                            <h3>Recent Activity</h3>
+                            <button class="clear-btn" id="clearActivity">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <div class="activity-list" id="activityList">
+                            <div class="activity-empty">
+                                <i class="fas fa-inbox"></i>
+                                <p>No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card glass">
+                        <div class="panel-header">
+                            <i class="fas fa-chart-simple"></i>
+                            <h3>Performance</h3>
+                        </div>
+                        <div class="performance-stats">
+                            <div class="perf-item">
+                                <span>Uptime</span>
+                                <span id="perfUptime">0s</span>
+                            </div>
+                            <div class="perf-item">
+                                <span>Last crash</span>
+                                <span id="perfLastCrash">None</span>
+                            </div>
+                            <div class="perf-item">
+                                <span>Auto restarts</span>
+                                <span id="perfCrashCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Console Page -->
+            <div id="console" class="page">
+                <div class="console-container glass">
+                    <div class="console-header">
+                        <div class="console-tabs">
+                            <button class="console-tab active" data-view="output">
+                                <i class="fas fa-terminal"></i> Output
+                            </button>
+                        </div>
+                        <div class="console-actions">
+                            <button class="console-action" id="clearConsole">
+                                <i class="fas fa-eraser"></i>
+                                <span>Clear</span>
+                            </button>
+                            <button class="console-action" id="copyConsole">
+                                <i class="fas fa-copy"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="console-output" id="consoleOutput">
+                        <div class="console-welcome">
+                            <i class="fas fa-terminal"></i>
+                            <p>Anyboot Panel Console v2.0</p>
+                            <small>Server output will appear here</small>
+                        </div>
+                    </div>
+                    <div class="console-input-area">
+                        <div class="input-wrapper glass">
+                            <span class="input-prompt">></span>
+                            <input type="text" id="consoleInput" placeholder="Type a command... (e.g., say Hello everyone!)" autocomplete="off">
+                            <button id="sendCommand">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="command-suggestions">
+                            <span class="suggestion" data-cmd="list">list</span>
+                            <span class="suggestion" data-cmd="save-all">save-all</span>
+                            <span class="suggestion" data-cmd="op">op &lt;player&gt;</span>
+                            <span class="suggestion" data-cmd="deop">deop &lt;player&gt;</span>
+                            <span class="suggestion" data-cmd="gamemode creative">gamemode creative</span>
+                            <span class="suggestion" data-cmd="weather clear">weather clear</span>
+                            <span class="suggestion" data-cmd="time set day">time set day</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Files Page -->
+            <div id="files" class="page">
+                <div class="files-container glass">
+                    <div class="files-header">
+                        <div class="breadcrumb" id="breadcrumb">
+                            <span class="breadcrumb-item" data-path="">root</span>
+                        </div>
+                        <div class="files-actions">
+                            <button class="files-btn" id="newFolderBtn">
+                                <i class="fas fa-folder-plus"></i>
+                                <span>New Folder</span>
+                            </button>
+                            <button class="files-btn primary" id="uploadBtn">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Upload</span>
+                            </button>
+                            <button class="files-btn" id="refreshFiles">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="files-list" id="filesList">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Page -->
+            <div id="settings" class="page">
+                <div class="settings-container">
+                    <div class="settings-section glass">
+                        <h2><i class="fas fa-server"></i> Server Settings</h2>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>RAM (Max)</label>
+                                <input type="number" id="settingMaxRam" min="1" max="16" step="1" class="setting-input">
+                                <small>GB</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>RAM (Min)</label>
+                                <input type="number" id="settingMinRam" min="1" max="16" step="1" class="setting-input">
+                                <small>GB</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>Max Players</label>
+                                <input type="number" id="settingMaxPlayers" min="1" max="100" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>View Distance</label>
+                                <input type="number" id="settingViewDistance" min="3" max="32" class="setting-input">
+                            </div>
+                            <div class="setting-item">
+                                <label>Difficulty</label>
+                                <select id="settingDifficulty" class="setting-select">
+                                    <option value="peaceful">Peaceful</option>
+                                    <option value="easy">Easy</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Online Mode (Premium)</label>
+                                <select id="settingOnlineMode" class="setting-select">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>PvP</label>
+                                <select id="settingPvp" class="setting-select">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Allow Nether</label>
+                                <select id="settingAllowNether" class="setting-select">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Allow End</label>
+                                <select id="settingAllowEnd" class="setting-select">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Auto-restart</label>
+                                <select id="settingAutoRestart" class="setting-select">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Spawn Protection</label>
+                                <input type="number" id="settingSpawnProtection" min="0" max="64" class="setting-input">
+                            </div>
+                            <div class="setting-item full-width">
+                                <label>Server MOTD</label>
+                                <input type="text" id="settingMotd" class="setting-input" placeholder="A Minecraft Server">
+                                <small>Color codes: &a = green, &c = red, &e = yellow, &b = cyan</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="save-btn glass" id="saveSettings">
+                            <i class="fas fa-save"></i>
+                            Save All Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Network Page -->
+            <div id="network" class="page">
+                <div class="settings-container">
+                    <div class="settings-section glass">
+                        <h2><i class="fas fa-network-wired"></i> Network Configuration</h2>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>Server Port</label>
+                                <input type="number" id="networkServerPort" min="1" max="65535" class="setting-input">
+                                <small>Minecraft server port (default: 25565)</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>Query Port</label>
+                                <input type="number" id="networkQueryPort" min="1" max="65535" class="setting-input">
+                                <small>Server query port</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>RCON Port</label>
+                                <input type="number" id="networkRconPort" min="1" max="65535" class="setting-input">
+                                <small>Remote console port</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>Enable RCON</label>
+                                <select id="networkEnableRcon" class="setting-select">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Enable Query</label>
+                                <select id="networkEnableQuery" class="setting-select">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Max Connections</label>
+                                <input type="number" id="networkMaxConnections" min="1" max="100" class="setting-input">
+                                <small>Maximum concurrent connections</small>
+                            </div>
+                            <div class="setting-item">
+                                <label>Network Compression</label>
+                                <input type="number" id="networkCompression" min="0" max="512" class="setting-input">
+                                <small>Compression threshold (bytes, 0 = disable)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="save-btn glass" id="saveNetworkSettings">
+                            <i class="fas fa-save"></i>
+                            Save Network Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Editor Modal - Fullscreen -->
+    <div class="modal fullscreen" id="editorModal">
+        <div class="modal-content fullscreen glass">
+            <div class="modal-header">
+                <h3><i class="fas fa-code"></i> Edit File: <span id="editingFileName"></span></h3>
+                <button class="modal-close" id="closeEditorBtn">&times;</button>
+            </div>
+            <div class="editor-container">
+                <textarea id="editorTextarea"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="cancelEdit">Cancel</button>
+                <button class="modal-btn save" id="saveEdit">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Folder Modal -->
+    <div class="modal" id="folderModal">
+        <div class="modal-content small glass">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-plus"></i> New Folder</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="folderName" placeholder="Folder name" autocomplete="off">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="cancelFolder">Cancel</button>
+                <button class="modal-btn save" id="createFolder">Create</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
