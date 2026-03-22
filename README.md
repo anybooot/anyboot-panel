@@ -6,7 +6,7 @@
 
 A modern, glassmorphism-styled Minecraft server management panel with real-time console, file manager, and complete server configuration.
 
-![Anyboot Panel Screenshot](https://via.placeholder.com/1200x600?text=Anyboot+Panel+Screenshot)
+![Anyboot Panel Screenshot]([https://via.placeholder.com/1200x600?text=Anyboot+Panel+Screenshot](https://i.ibb.co/Jw2w352T/image.png))
 
 ## ✨ Features
 
